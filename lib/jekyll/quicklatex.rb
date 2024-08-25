@@ -15,7 +15,7 @@ module Jekyll
         @output_dir = context.registers[:site].config['destination']
         snippet = filter_snippet(super)
         url = remote_compile snippet
-        "<img src='/#{@saved_dir}#{url}' onerror='this.onerror=null; this.src=\"http://quicklatex.com#{url}\"' />#{super}"
+        "<img src='/#{@saved_dir}#{url}'/>#{super}"
       end
 
       private
@@ -55,7 +55,7 @@ module Jekyll
       end
 
       def init_param
-        @site_uri = URI('http://quicklatex.com/latex3.f')
+        @site_uri = URI('https://quicklatex.com/latex3.f')
         @post_param = {
           :fsize => '30px',
           :fcolor => '000000',
@@ -112,12 +112,13 @@ module Jekyll
         end
         req.body = body_raw.sub('&', '')
 
-        res = Net::HTTP.start(@site_uri.hostname, @site_uri.port) do |http|
+        res = Net::HTTP.start(@site_uri.hostname, @site_uri.port, use_ssl: true) do |http|
           http.request(req)
         end
 
         case res
         when Net::HTTPSuccess, Net::HTTPRedirection
+          puts res.body
           pic_uri = URI(res.body[@pic_regex])
 
           save_path = "#{@saved_dir}#{pic_uri.path}"
