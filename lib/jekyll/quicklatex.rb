@@ -15,7 +15,7 @@ module Jekyll
         @output_dir = context.registers[:site].config['destination']
         snippet = filter_snippet(super)
         url = remote_compile snippet
-        "<img src='/#{@saved_dir}#{url}'/>#{super}"
+        "<img src='/#{@saved_dir}#{url}'/>"
       end
 
       private
@@ -63,9 +63,8 @@ module Jekyll
           :out => 1,
           :errors => 1,
           :remhost => 'quicklatex.com',
-          :rnd => '9.483426365449255'
         }
-        @pic_regex = /http.*png/
+        @pic_regex = /https.*png/
         @saved_dir = 'assets/latex'
         @cache = Cache.new
       end
