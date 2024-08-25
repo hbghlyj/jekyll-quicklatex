@@ -131,7 +131,7 @@ module Jekyll
           Net::HTTP.start(pic_uri.host) do |http|
             # http get
             resp = http.get(pic_uri.path)
-            File.open(save_path, "wb") do |file|
+            File.open(save_path, "wt") do |file|
               file.write(resp.body)
             end
           end
