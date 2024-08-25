@@ -14,8 +14,7 @@ module Jekyll
       def render(context)
         @output_dir = context.registers[:site].config['destination']
         snippet = filter_snippet(super)
-        url = remote_compile snippet
-        "<img src='/#{@saved_dir}#{url}'/>"
+        remote_compile snippet
       end
 
       private
@@ -120,23 +119,13 @@ module Jekyll
           puts res.body
           pic_uri = URI(res.body[@pic_regex].gsub('.png','.svg'))
 
-          save_path = "#{@saved_dir}#{pic_uri.path}"
-          dir = File.dirname(save_path)
-          unless File.directory? dir
-            FileUtils.mkdir_p dir
-          end
-
           @cache.cache(snippet, pic_uri.path)
 
           Net::HTTP.start(pic_uri.host) do |http|
             # http get
             resp = http.get(pic_uri.path)
-            File.open(save_path, "wt") do |file|
-              file.write(resp.body)
-            end
+            resp.body
           end
-
-          pic_uri.path
         else
           res.value
         end
