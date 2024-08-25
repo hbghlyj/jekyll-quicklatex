@@ -118,7 +118,7 @@ module Jekyll
         case res
         when Net::HTTPSuccess, Net::HTTPRedirection
           puts res.body
-          pic_uri = URI(res.body[@pic_regex])
+          pic_uri = URI(res.body[@pic_regex].gsub('.png','.svg'))
 
           save_path = "#{@saved_dir}#{pic_uri.path}"
           dir = File.dirname(save_path)
