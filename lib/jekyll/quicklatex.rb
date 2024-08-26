@@ -57,3 +57,4 @@ module Liquid
     end
   end
 end
+Liquid::Template.register_tag('latex', Jekyll::Quicklatex::Block)
