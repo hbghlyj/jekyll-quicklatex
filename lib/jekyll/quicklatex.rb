@@ -26,7 +26,7 @@ module Jekyll
         end
       end
 
-      def render_to_output_buffer(_context, output)
+      def render(_context, output)
         output << @body
         output
       end
