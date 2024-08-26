@@ -10,8 +10,6 @@ module Jekyll
         super
         init_param
       end
-
-      @markup="0"
     
       def render(context)
         @output_dir = context.registers[:site].config['destination']
