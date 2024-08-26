@@ -17,8 +17,8 @@ module Jekyll
       def parse(tokens)
         @body = +''
         while (token = tokens.shift)
-          if token =~ /\A(.*)#{TagStart}#{WhitespaceControl}?\s*(\w+)\s*(.*)?#{WhitespaceControl}?#{TagEnd}\z/om && block_delimiter == Regexp.last_match(2)
-            parse_context.trim_whitespace = (token[-3] == WhitespaceControl)
+          if token =~ /\A(.*)\{\%-?\s*(\w+)\s*(.*)?-?\%\}\z/om && block_delimiter == Regexp.last_match(2)
+            parse_context.trim_whitespace = (token[-3] == '-')
             @body << Regexp.last_match(1) if Regexp.last_match(1) != ""
             return
           end
