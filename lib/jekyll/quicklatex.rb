@@ -82,7 +82,7 @@ module Jekyll
           Net::HTTP.start(pic_uri.host) do |http|
             # http get
             resp = http.get(pic_uri.path)
-            resp.body
+            return resp.body
           end
         else
           res.value
