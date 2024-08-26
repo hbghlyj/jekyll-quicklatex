@@ -136,6 +136,7 @@ module Jekyll
           #assert_equal the first char of the response is the char "0"
           if res.body[0] != '0'
             raise "QuickLatex Error: #{res.body}"
+          end
 
           pic_uri = URI(res.body[@pic_regex]+'.svg')
           puts pic_uri
