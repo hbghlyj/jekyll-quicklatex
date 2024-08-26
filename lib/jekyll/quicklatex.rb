@@ -28,7 +28,7 @@ module Jekyll
 
       def render(context)
         @output_dir = context.registers[:site].config['destination']
-        "<img src='/#{@saved_dir}#{remote_compile @body}'/>"
+        "<img src='/#{remote_compile @body}'/>"
       end
 
       def nodelist
@@ -152,11 +152,11 @@ module Jekyll
           Net::HTTP.start(pic_uri.host, use_ssl: true) do |http|
             # https get
             resp = http.get(pic_uri.path)
-            File.open(save_path, "wb") do |file|
+            File.open(save_path, "w") do |file|
               file.write(resp.body)
             end
           end
-          pic_uri.path
+          save_path
         else
           res.value
         end
