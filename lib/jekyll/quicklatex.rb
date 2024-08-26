@@ -78,6 +78,7 @@ module Jekyll
         when Net::HTTPSuccess, Net::HTTPRedirection
           puts res.body
           pic_uri = URI(res.body[@pic_regex]+'.svg')
+          puts pic_uri
 
           Net::HTTP.start(pic_uri.host) do |http|
             # http get
