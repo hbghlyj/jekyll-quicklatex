@@ -26,9 +26,8 @@ module Jekyll
         end
       end
 
-      def render(_context, output)
-        output << @body
-        output
+      def render(_context)
+        @body
       end
 
       def nodelist
