@@ -132,8 +132,19 @@ module Jekyll
         case res
         when Net::HTTPSuccess, Net::HTTPRedirection
           puts res.body
+
+          #assert_equal the first char of the response is the char "0"
+          if res.body[0] != '0'
+            raise "QuickLatex Error: #{res.body}"
+
           pic_uri = URI(res.body[@pic_regex]+'.svg')
           puts pic_uri
+          
+          save_path = "#{@saved_dir}#{pic_uri.path}"
+          dir = File.dirname(save_path)
+          unless File.directory? dir
+            FileUtils.mkdir_p dir
+          end
 
           @cache.cache(snippet, pic_uri.path)
           
