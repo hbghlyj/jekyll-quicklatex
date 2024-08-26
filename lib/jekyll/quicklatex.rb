@@ -4,15 +4,89 @@ require 'digest'
 require 'jekyll/quicklatex/version'
 
 module Jekyll
-  class Quicklatex < Liquid::Tag
-
-    def initialize(tag_name, text, tokens)
-      super
-      @text = text
-    end
-
+  module Quicklatex
+    class Block < Liquid::Block
+      def initialize tag_name, markup, tokens
+        super
+        init_param
+      end
+    
     def render(context)
       "{% raw %}#{@text}{% endraw %}"
+    end
+
+      def init_param
+        @site_uri = URI('https://quicklatex.com/latex3.f')
+        @post_param = {
+          :fsize => '30px',
+          :fcolor => '000000',
+          :mode => 0,
+          :out => 1,
+          :errors => 1,
+          :remhost => 'quicklatex.com',
+        }
+        @pic_regex = /https:\/\/quicklatex.com\/cache3\/[^\.]*/
+        @saved_dir = 'assets/latex'
+      end
+
+      def filter_snippet(snippet)
+        # text is html
+        # strip all html tags
+        no_html_tag = snippet.gsub(/<\/?[^>]*>/, "")
+          .gsub(/&gt;/, '>')
+          .gsub(/&lt;/, '<')
+
+        # strip all comments in latex code snippet
+        lines = no_html_tag.lines
+        lines.reject do |l|
+          # blank line or comments(start with %)
+          l =~ /^\s*$/ or l =~ /^\s*%/
+        end.join
+      end
+
+      def seperate_snippet(snippet)
+        lines = snippet.lines
+        preamble, formula = lines.partition { |line| line =~ /usepackage/ }
+
+        def join_back(lines)
+          lines.join('').gsub(/%/, '%25').gsub(/&/, '%26')
+        end
+
+        return {
+          :preamble => join_back(preamble),
+          :formula => join_back(formula),
+        }
+      end
+
+      def remote_compile(snippet)
+
+        param = @post_param.merge(seperate_snippet(snippet))
+
+        req = Net::HTTP::Post.new(@site_uri)
+        body_raw = param.inject('') do |result, nxt|
+          "#{result}&#{nxt[0].to_s}=#{nxt[1].to_s}"
+        end
+        req.body = body_raw.sub('&', '')
+
+        res = Net::HTTP.start(@site_uri.hostname, @site_uri.port, use_ssl: true) do |http|
+          http.request(req)
+        end
+
+        case res
+        when Net::HTTPSuccess, Net::HTTPRedirection
+          puts res.body
+          pic_uri = URI(res.body[@pic_regex]+'.svg')
+          puts pic_uri
+
+          Net::HTTP.start(pic_uri.host, use_ssl: true) do |http|
+            # http get
+            resp = http.get(pic_uri.path)
+            return resp.body
+          end
+        else
+          res.value
+        end
+      end
     end
   end
 end
