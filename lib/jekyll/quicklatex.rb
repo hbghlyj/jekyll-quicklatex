@@ -6,46 +6,47 @@ require 'jekyll/quicklatex/version'
 module Jekyll
   module Quicklatex
     class Block < Liquid::Block
-    Syntax = /\A\s*\z/
+      Syntax = /\A\s*\z/
 
-    def initialize(tag_name, markup, parse_context)
-      super
+      def initialize(tag_name, markup, parse_context)
+        super
 
-      ensure_valid_markup(tag_name, markup, parse_context)
-    end
-
-    def parse(tokens)
-      @body = +''
-      while (token = tokens.shift)
-        if token =~ BlockBody::FullTokenPossiblyInvalid && block_delimiter == Regexp.last_match(2)
-          parse_context.trim_whitespace = (token[-3] == WhitespaceControl)
-          @body << Regexp.last_match(1) if Regexp.last_match(1) != ""
-          return
-        end
-        @body << token unless token.empty?
+        ensure_valid_markup(tag_name, markup, parse_context)
       end
 
-      raise_tag_never_closed(block_name)
-    end
+      def parse(tokens)
+        @body = +''
+        while (token = tokens.shift)
+          if token =~ BlockBody::FullTokenPossiblyInvalid && block_delimiter == Regexp.last_match(2)
+            parse_context.trim_whitespace = (token[-3] == WhitespaceControl)
+            @body << Regexp.last_match(1) if Regexp.last_match(1) != ""
+            return
+          end
+          @body << token unless token.empty?
+        end
 
-    def render_to_output_buffer(_context, output)
-      output << @body
-      output
-    end
+        raise_tag_never_closed(block_name)
+      end
 
-    def nodelist
-      [@body]
-    end
+      def render_to_output_buffer(_context, output)
+        output << @body
+        output
+      end
 
-    def blank?
-      @body.empty?
-    end
+      def nodelist
+        [@body]
+      end
 
-    protected
+      def blank?
+        @body.empty?
+      end
 
-    def ensure_valid_markup(tag_name, markup, parse_context)
-      unless Syntax.match?(markup)
-        raise SyntaxError, parse_context.locale.t("errors.syntax.tag_unexpected_args", tag: tag_name)
+      protected
+
+      def ensure_valid_markup(tag_name, markup, parse_context)
+        unless Syntax.match?(markup)
+          raise SyntaxError, parse_context.locale.t("errors.syntax.tag_unexpected_args", tag: tag_name)
+        end
       end
     end
   end
