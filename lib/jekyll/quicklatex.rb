@@ -26,7 +26,7 @@ module Jekyll
         end
       end
 
-      def render(_context)
+      def render(context)
         @output_dir = context.registers[:site].config['destination']
         remote_compile @body
       end
