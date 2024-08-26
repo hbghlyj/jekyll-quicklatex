@@ -11,19 +11,7 @@ module Jekyll
         init_param
       end
 
-      def parse(tokens)
-        @body = +''
-        while (token = tokens.shift)
-          if block_delimiter == Regexp.last_match(2)
-            parse_context.trim_whitespace = (token[-3] == WhitespaceControl)
-            @body << Regexp.last_match(1) if Regexp.last_match(1) != ""
-            return
-          end
-          @body << token unless token.empty?
-        end
-  
-        self.raise_tag_never_closed(block_name)
-      end
+      @markup="0"
     
       def render(context)
         @output_dir = context.registers[:site].config['destination']
