@@ -14,7 +14,8 @@ module Jekyll
       def render(context)
         @output_dir = context.registers[:site].config['destination']
         snippet = filter_snippet(super)
-        remote_compile snippet
+        r = remote_compile snippet
+        '{% raw  %}'.r.'{% endraw  %}'
       end
 
       def init_param
