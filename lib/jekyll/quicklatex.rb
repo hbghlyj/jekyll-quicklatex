@@ -27,7 +27,7 @@ module Jekyll
           :errors => 1,
           :remhost => 'quicklatex.com',
         }
-        @pic_regex = /https://quicklatex.com\/cache3\/[^\.]*/
+        @pic_regex = /https:\/\/quicklatex.com\/cache3\/[^\.]*/
         @saved_dir = 'assets/latex'
       end
 
