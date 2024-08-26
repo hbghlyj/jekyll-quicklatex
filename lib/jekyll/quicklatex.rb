@@ -22,7 +22,7 @@ module Jekyll
           @body << token unless token.empty?
         end
   
-        raise_tag_never_closed(block_name)
+        Liquid::Block::raise_tag_never_closed(block_name)
       end
     
       def render(context)
