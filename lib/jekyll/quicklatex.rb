@@ -28,7 +28,7 @@ module Jekyll
 
       def render(context)
         @output_dir = context.registers[:site].config['destination']
-        remote_compile @body
+        "<img src='/#{@saved_dir}#{remote_compile @body}'/>"
       end
 
       def nodelist
