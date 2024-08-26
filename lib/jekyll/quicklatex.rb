@@ -11,6 +11,20 @@ module Jekyll
         init_param
       end
 
+      def parse(tokens)
+        @body = +''
+        while (token = tokens.shift)
+          if token =~ BlockBody::FullTokenPossiblyInvalid && block_delimiter == Regexp.last_match(2)
+            parse_context.trim_whitespace = (token[-3] == WhitespaceControl)
+            @body << Regexp.last_match(1) if Regexp.last_match(1) != ""
+            return
+          end
+          @body << token unless token.empty?
+        end
+  
+        raise_tag_never_closed(block_name)
+      end
+    
       def render(context)
         @output_dir = context.registers[:site].config['destination']
         snippet = filter_snippet(super)
@@ -32,7 +46,7 @@ module Jekyll
       end
 
       def filter_snippet(snippet)
-        # text is html that rendered by highlight
+        # text is html
         # strip all html tags
         no_html_tag = snippet.gsub(/<\/?[^>]*>/, "")
           .gsub(/&gt;/, '>')
