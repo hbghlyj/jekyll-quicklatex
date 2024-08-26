@@ -17,42 +17,6 @@ module Jekyll
         remote_compile snippet
       end
 
-      private
-
-      class Cache
-        def initialize
-          @cache = {}
-          @cache_file = 'latex.cache'
-          if File.exist? @cache_file
-            File.open(@cache_file, 'r') do |f|
-              while line = f.gets
-                hash, url = line.split
-                @cache[hash] = url
-              end
-            end
-          end
-        end
-
-        def fetch(content)
-          id = hash_id(content)
-          @cache[id]
-        end
-
-        def cache(content, url)
-          id = hash_id(content)
-          @cache[id] = url
-          File.open(@cache_file, 'a') do |f|
-            f.syswrite("#{id} #{url}\n")
-          end
-        end
-
-        private
-
-        def hash_id(content)
-          Digest::MD5.hexdigest(content)
-        end
-      end
-
       def init_param
         @site_uri = URI('https://quicklatex.com/latex3.f')
         @post_param = {
@@ -63,9 +27,8 @@ module Jekyll
           :errors => 1,
           :remhost => 'quicklatex.com',
         }
-        @pic_regex = /https.*png/
+        @pic_regex = /https://quicklatex.com/cache3/[^\.]*/
         @saved_dir = 'assets/latex'
-        @cache = Cache.new
       end
 
       def filter_snippet(snippet)
@@ -98,9 +61,6 @@ module Jekyll
       end
 
       def remote_compile(snippet)
-        if url = @cache.fetch(snippet)
-          return url
-        end
 
         param = @post_param.merge(seperate_snippet(snippet))
 
@@ -117,9 +77,7 @@ module Jekyll
         case res
         when Net::HTTPSuccess, Net::HTTPRedirection
           puts res.body
-          pic_uri = URI(res.body[@pic_regex].gsub('.png','.svg'))
-
-          @cache.cache(snippet, pic_uri.path)
+          pic_uri = URI(res.body[@pic_regex].join('.svg'))
 
           Net::HTTP.start(pic_uri.host) do |http|
             # http get
