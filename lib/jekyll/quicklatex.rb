@@ -80,7 +80,7 @@ module Jekyll
           pic_uri = URI(res.body[@pic_regex]+'.svg')
           puts pic_uri
 
-          Net::HTTP.start(pic_uri.host) do |http|
+          Net::HTTP.start(pic_uri.host, use_ssl: true) do |http|
             # http get
             resp = http.get(pic_uri.path)
             return resp.body
