@@ -8,7 +8,7 @@ module Jekyll
     class Block < Liquid::Block
       def initialize tag_name, markup, tokens
         super
-        init_param
+        @text = text
       end
     
     def render(context)
