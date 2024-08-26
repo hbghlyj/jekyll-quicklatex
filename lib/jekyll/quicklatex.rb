@@ -6,20 +6,49 @@ require 'jekyll/quicklatex/version'
 module Jekyll
   module Quicklatex
     class Block < Liquid::Block
-      def initialize tag_name, markup, tokens
+      Syntax = /\A\s*\z/
+
+      def initialize(tag_name, markup, parse_context)
         super
         init_param
+        ensure_valid_markup(tag_name, markup, parse_context)
+      end
+      #Start raw: https://github.com/Shopify/liquid/blob/main/lib/liquid/tags/raw.rb
+      def parse(tokens)
+        @body = +''
+        while (token = tokens.shift)
+          if token =~ /\A(.*)\{\%-?\s*(\w+)\s*(.*)?-?\%\}\z/om && block_delimiter == Regexp.last_match(2)
+            parse_context.trim_whitespace = (token[-3] == '-')
+            @body << Regexp.last_match(1) if Regexp.last_match(1) != ""
+            return
+          end
+          @body << token unless token.empty?
+        end
       end
 
       def render(context)
         @output_dir = context.registers[:site].config['destination']
-        snippet = filter_snippet(super)
-        url = remote_compile snippet
-        "<img src='/#{@saved_dir}#{url}' onerror='this.onerror=null; this.src=\"http://quicklatex.com#{url}\"' />#{super}"
+        "<img src='/#{remote_compile @body}'/>"
       end
 
-      private
+      def nodelist
+        [@body]
+      end
 
+      def blank?
+        @body.empty?
+      end
+
+      protected
+
+      def ensure_valid_markup(tag_name, markup, parse_context)
+        unless Syntax.match?(markup)
+          raise SyntaxError, parse_context.locale.t("errors.syntax.tag_unexpected_args", tag: tag_name)
+        end
+      end
+      #End raw
+
+      #Start QuickLatex: https://github.com/DreamAndDead/jekyll-quicklatex/blob/master/lib/jekyll/quicklatex.rb
       class Cache
         def initialize
           @cache = {}
@@ -53,36 +82,20 @@ module Jekyll
           Digest::MD5.hexdigest(content)
         end
       end
-
+      
       def init_param
-        @site_uri = URI('http://quicklatex.com/latex3.f')
+        @site_uri = URI('https://quicklatex.com/latex3.f')
         @post_param = {
           :fsize => '30px',
           :fcolor => '000000',
           :mode => 0,
           :out => 1,
-          :errors => 1,
+          :errors => 1,#report LaTeX errors
           :remhost => 'quicklatex.com',
-          :rnd => '9.483426365449255'
         }
-        @pic_regex = /http.*png/
+        @pic_regex = /https:\/\/quicklatex.com\/cache3\/[^\.]*/
         @saved_dir = 'assets/latex'
         @cache = Cache.new
-      end
-
-      def filter_snippet(snippet)
-        # text is html that rendered by highlight
-        # strip all html tags
-        no_html_tag = snippet.gsub(/<\/?[^>]*>/, "")
-          .gsub(/&gt;/, '>')
-          .gsub(/&lt;/, '<')
-
-        # strip all comments in latex code snippet
-        lines = no_html_tag.lines
-        lines.reject do |l|
-          # blank line or comments(start with %)
-          l =~ /^\s*$/ or l =~ /^\s*%/
-        end.join
       end
 
       def seperate_snippet(snippet)
@@ -90,7 +103,7 @@ module Jekyll
         preamble, formula = lines.partition { |line| line =~ /usepackage/ }
 
         def join_back(lines)
-          lines.join('').gsub(/%/, '%25').gsub(/&/, '%26')
+          lines.join('').gsub(/%/, '%25').gsub(/&/, '%26')#QuickLatex-customized form encoding of &
         end
 
         return {
@@ -103,7 +116,7 @@ module Jekyll
         if url = @cache.fetch(snippet)
           return url
         end
-
+        
         param = @post_param.merge(seperate_snippet(snippet))
 
         req = Net::HTTP::Post.new(@site_uri)
@@ -112,14 +125,22 @@ module Jekyll
         end
         req.body = body_raw.sub('&', '')
 
-        res = Net::HTTP.start(@site_uri.hostname, @site_uri.port) do |http|
+        res = Net::HTTP.start(@site_uri.hostname, @site_uri.port, use_ssl: true) do |http|
           http.request(req)
         end
 
         case res
         when Net::HTTPSuccess, Net::HTTPRedirection
-          pic_uri = URI(res.body[@pic_regex])
+          puts res.body
 
+          #assert_equal the first char of the response is the char "0"
+          if res.body[0] != '0'
+            raise "QuickLatex Error: #{res.body}"
+          end
+
+          pic_uri = URI(res.body[@pic_regex]+'.svg')
+          puts pic_uri
+          
           save_path = "#{@saved_dir}#{pic_uri.path}"
           dir = File.dirname(save_path)
           unless File.directory? dir
@@ -127,16 +148,15 @@ module Jekyll
           end
 
           @cache.cache(snippet, pic_uri.path)
-
-          Net::HTTP.start(pic_uri.host) do |http|
-            # http get
+          
+          Net::HTTP.start(pic_uri.host, use_ssl: true) do |http|
+            # https get
             resp = http.get(pic_uri.path)
-            File.open(save_path, "wb") do |file|
+            File.open(save_path, "w") do |file|
               file.write(resp.body)
             end
           end
-
-          pic_uri.path
+          save_path
         else
           res.value
         end
@@ -144,5 +164,6 @@ module Jekyll
     end
   end
 end
+
 
 Liquid::Template.register_tag('latex', Jekyll::Quicklatex::Block)
