@@ -156,7 +156,7 @@ module Jekyll
               file.write(resp.body)
             end
           end
-          "<img src='#{save_path}'/>"
+          return "<img src='#{save_path}'/>"
         else
           res.value
         end
