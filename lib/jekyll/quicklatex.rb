@@ -6,7 +6,7 @@ require 'jekyll/quicklatex/version'
 module Jekyll
   module Quicklatex
     class Block < Liquid::Block
-      def initialize tag_name, markup, tokens
+      def initialize tag_name, text, tokens
         super
         @text = text
       end
