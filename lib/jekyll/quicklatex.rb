@@ -94,7 +94,7 @@ module Jekyll
           :remhost => 'quicklatex.com',
         }
         @pic_regex = /https:\/\/quicklatex.com\/cache3\/[^\.]*/
-        @saved_dir = 'assets/latex'
+        @saved_dir = 'quicklatex'
         @cache = Cache.new
       end
 
@@ -141,7 +141,7 @@ module Jekyll
           pic_uri = URI(res.body[@pic_regex]+'.svg')
           puts pic_uri
           
-          save_path = "#{@saved_dir}#{pic_uri.path}"
+          save_path = "_site/#{@saved_dir}#{pic_uri.path}"
           dir = File.dirname(save_path)
           unless File.directory? dir
             FileUtils.mkdir_p dir
@@ -156,7 +156,7 @@ module Jekyll
               file.write(resp.body)
             end
           end
-          save_path
+          "#{@saved_dir}#{pic_uri.path}"
         else
           res.value
         end
