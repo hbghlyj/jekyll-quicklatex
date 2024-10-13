@@ -94,7 +94,6 @@ module Jekyll
           :remhost => 'quicklatex.com',
         }
         @pic_regex = /https:\/\/quicklatex.com\/cache3\/[^\.]*/
-        @saved_dir = 'quicklatex'
         @cache = Cache.new
       end
 
@@ -114,7 +113,7 @@ module Jekyll
 
       def remote_compile(snippet)
         if url = @cache.fetch(snippet)
-          return @saved_dir+url
+          return url
         end
         
         param = @post_param.merge(seperate_snippet(snippet))
@@ -141,7 +140,7 @@ module Jekyll
           pic_uri = URI(res.body[@pic_regex]+'.svg')
           puts pic_uri
           
-          save_path = "_site/#{@saved_dir}#{pic_uri.path}"
+          save_path = "assets#{pic_uri.path}"
           dir = File.dirname(save_path)
           unless File.directory? dir
             FileUtils.mkdir_p dir
@@ -156,7 +155,9 @@ module Jekyll
               file.write(resp.body)
             end
           end
-          "#{@saved_dir}#{pic_uri.path}"
+          site = context.registers[:site]
+          site.static_files << Jekyll::StaticFile.new(site, site.source, "assets", pic_uri.path)
+          save_path
         else
           res.value
         end
