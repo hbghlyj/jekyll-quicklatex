@@ -28,10 +28,9 @@ module Jekyll
 
       def render(context)
         site = context.registers[:site]
-        @output_dir = site.config['destination']
-        pic_path = remote_compile @body
-        site.static_files << Jekyll::StaticFile.new(site, site.source, @output_dir, pic_path)
-        "<img src='/#{pic_path}'/>"
+        filename = remote_compile @body
+        site.static_files << Jekyll::StaticFile.new(site, site.source, '/assets', filename)
+        "<img src='/assets/#{filename}'/>"
       end
 
       def nodelist
@@ -143,7 +142,8 @@ module Jekyll
           pic_uri = URI(res.body[@pic_regex] + '.svg')
           puts pic_uri
           
-          save_path = "assets/" + File.basename(pic_uri.path)
+          filename = File.basename(pic_uri.path)
+          save_path = "assets/" + filename
           dir = File.dirname(save_path)
           unless File.directory? dir
             FileUtils.mkdir_p dir
@@ -157,8 +157,8 @@ module Jekyll
             end
           end
           
-          @cache.cache(snippet, save_path)
-          save_path
+          @cache.cache(snippet, filename)
+          filename
         else
           res.value
         end
