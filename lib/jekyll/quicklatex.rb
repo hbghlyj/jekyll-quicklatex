@@ -143,7 +143,7 @@ module Jekyll
           pic_uri = URI(res.body[@pic_regex] + '.svg')
           puts pic_uri
           
-          save_path = "assets" + pic_uri.path}
+          save_path = "assets" + pic_uri.path
           dir = File.dirname(save_path)
           unless File.directory? dir
             FileUtils.mkdir_p dir
