@@ -27,7 +27,8 @@ module Jekyll
       end
 
       def render(context)
-        @output_dir = context.registers[:site].config['destination']
+        site = context.registers[:site]
+        @output_dir = site.config['destination']
         site.static_files << Jekyll::StaticFile.new(site, site.source, @output_dir + "assets", pic_uri.path)
         "<img src='/assets#{remote_compile @body}'/>"
       end
