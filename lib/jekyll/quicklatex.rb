@@ -96,7 +96,7 @@ module Jekyll
           :errors => 1,#report LaTeX errors
           :remhost => 'quicklatex.com',
         }
-        @pic_regex = /https:\/\/quicklatex.com\/cache3\/[^\.]*/
+        @pic_regex = /https:\/\/quicklatex.com\/cache3\/[a-f0-9]{2}/[^\.]*/
         @cache = Cache.new
       end
 
