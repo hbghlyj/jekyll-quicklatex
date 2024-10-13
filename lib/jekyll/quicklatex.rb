@@ -29,8 +29,9 @@ module Jekyll
       def render(context)
         site = context.registers[:site]
         @output_dir = site.config['destination']
-        site.static_files << Jekyll::StaticFile.new(site, site.source, @output_dir + "assets", pic_uri.path)
-        "<img src='/assets#{remote_compile @body}'/>"
+        pic_path = remote_compile @body
+        site.static_files << Jekyll::StaticFile.new(site, site.source, @output_dir + "assets", pic_path)
+        "<img src='/assets#{pic_path}'/>"
       end
 
       def nodelist
