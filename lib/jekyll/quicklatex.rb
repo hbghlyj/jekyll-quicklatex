@@ -158,7 +158,6 @@ module Jekyll
               file.write(resp.body)
             end
           end
-          site = context.registers[:site]
           pic_uri.path
         else
           res.value
