@@ -28,7 +28,8 @@ module Jekyll
 
       def render(context)
         @output_dir = context.registers[:site].config['destination']
-        "<img src='/#{remote_compile @body}'/>"
+        site.static_files << Jekyll::StaticFile.new(site, site.source, @output_dir + "assets", pic_uri.path)
+        "<img src='/assets#{remote_compile @body}'/>"
       end
 
       def nodelist
@@ -156,8 +157,7 @@ module Jekyll
             end
           end
           site = context.registers[:site]
-          site.static_files << Jekyll::StaticFile.new(site, site.source, "assets", pic_uri.path)
-          save_path
+          pic_uri.path
         else
           res.value
         end
