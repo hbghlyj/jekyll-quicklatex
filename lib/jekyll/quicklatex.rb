@@ -30,7 +30,7 @@ module Jekyll
         site = context.registers[:site]
         @output_dir = site.config['destination']
         pic_path = remote_compile @body
-        site.static_files << Jekyll::StaticFile.new(site, site.source, @output_dir + "assets", pic_path)
+        site.static_files << Jekyll::StaticFile.new(site, site.source, @output_dir + "/assets", pic_path)
         "<img src='/assets#{pic_path}'/>"
       end
 
@@ -140,10 +140,10 @@ module Jekyll
             raise "QuickLatex Error: #{res.body}"
           end
 
-          pic_uri = URI(res.body[@pic_regex]+'.svg')
+          pic_uri = URI(res.body[@pic_regex] + '.svg')
           puts pic_uri
           
-          save_path = "assets#{pic_uri.path}"
+          save_path = "assets" + pic_uri.path}
           dir = File.dirname(save_path)
           unless File.directory? dir
             FileUtils.mkdir_p dir
