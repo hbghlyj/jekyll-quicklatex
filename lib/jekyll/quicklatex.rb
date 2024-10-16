@@ -5,7 +5,7 @@ require 'jekyll/quicklatex/version'
 
 module Jekyll
   module Quicklatex
-    class Block < Liquid::Block
+    class latexBlock < Liquid::Block
       Syntax = /\A\s*\z/
 
       def initialize(tag_name, markup, parse_context)
@@ -160,7 +160,50 @@ module Jekyll
           @cache.cache(snippet, filename)
           filename
         else
-          res.value
+          raise res.body
+        end
+      end
+    end
+    class asyBlock < latexBlock
+      def remote_compile(snippet)
+        if url = @cache.fetch(snippet)
+          return url
+        end
+        
+        uri = URI.parse("http://asymptote.ualberta.ca:10007?f=svg")
+        request = Net::HTTP::Post.new(uri)
+        request.body = snippet
+
+        res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+          http.request(request)
+        end
+
+        case res
+        when Net::HTTPSuccess, Net::HTTPRedirection
+          puts res.body
+
+          pic_uri = URI(res.body[@pic_regex] + '.svg')
+          puts pic_uri
+          
+          filename = File.basename(pic_uri.path)
+          save_path = "assets/" + filename
+          dir = File.dirname(save_path)
+          unless File.directory? dir
+            FileUtils.mkdir_p dir
+          end
+
+          Net::HTTP.start(pic_uri.host, use_ssl: true) do |http|
+            # https get
+            resp = http.get(pic_uri.path)
+            File.open(save_path, "w") do |file|
+              file.write(resp.body)
+            end
+          end
+          
+          @cache.cache(snippet, filename)
+          filename
+        else
+          raise res.body
         end
       end
     end
@@ -168,4 +211,5 @@ module Jekyll
 end
 
 
-Liquid::Template.register_tag('latex', Jekyll::Quicklatex::Block)
+Liquid::Template.register_tag('latex', Jekyll::Quicklatex::latexBlock)
+Liquid::Template.register_tag('asy', Jekyll::Quicklatex::asyBlock)
