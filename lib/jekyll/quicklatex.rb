@@ -174,7 +174,7 @@ module Jekyll
         request = Net::HTTP::Post.new(uri)
         request.body = snippet
 
-        res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+        res = Net::HTTP.start(uri.hostname, uri.port) do |http|
           http.request(request)
         end
 
