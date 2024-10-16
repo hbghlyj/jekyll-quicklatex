@@ -143,16 +143,11 @@ module Jekyll
           puts pic_uri
           
           filename = File.basename(pic_uri.path)
-          save_path = "assets/" + filename
-          dir = File.dirname(save_path)
-          unless File.directory? dir
-            FileUtils.mkdir_p dir
-          end
 
           Net::HTTP.start(pic_uri.host, use_ssl: true) do |http|
             # https get
             resp = http.get(pic_uri.path)
-            File.open(save_path, "w") do |file|
+            File.open("assets/" + filename, "w") do |file|
               file.write(resp.body)
             end
           end
@@ -179,25 +174,10 @@ module Jekyll
         end
 
         case res
-        when Net::HTTPSuccess, Net::HTTPRedirection
-          puts res.body
-
-          pic_uri = URI(res.body[@pic_regex] + '.svg')
-          puts pic_uri
-          
-          filename = File.basename(pic_uri.path)
-          save_path = "assets/" + filename
-          dir = File.dirname(save_path)
-          unless File.directory? dir
-            FileUtils.mkdir_p dir
-          end
-
-          Net::HTTP.start(pic_uri.host, use_ssl: true) do |http|
-            # https get
-            resp = http.get(pic_uri.path)
-            File.open(save_path, "w") do |file|
-              file.write(resp.body)
-            end
+        when Net::HTTPSuccess, Net::HTTPRedirection          
+          filename = Time.now.to_i.to_s + ".svg"
+          File.open("assets/" + filename, "w") do |file|
+            file.write(resp.body)
           end
           
           @cache.cache(snippet, filename)
