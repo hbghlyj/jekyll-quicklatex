@@ -5,7 +5,7 @@ require 'jekyll/quicklatex/version'
 
 module Jekyll
   module Quicklatex
-    class latexBlock < Liquid::Block
+    class LatexBlock < Liquid::Block
       Syntax = /\A\s*\z/
 
       def initialize(tag_name, markup, parse_context)
@@ -164,7 +164,7 @@ module Jekyll
         end
       end
     end
-    class asyBlock < latexBlock
+    class AsyBlock < LatexBlock
       def remote_compile(snippet)
         if url = @cache.fetch(snippet)
           return url
@@ -211,5 +211,5 @@ module Jekyll
 end
 
 
-Liquid::Template.register_tag('latex', Jekyll::Quicklatex::latexBlock)
-Liquid::Template.register_tag('asy', Jekyll::Quicklatex::asyBlock)
+Liquid::Template.register_tag('latex', Jekyll::Quicklatex::LatexBlock)
+Liquid::Template.register_tag('asy', Jekyll::Quicklatex::AsyBlock)
