@@ -177,7 +177,7 @@ module Jekyll
         when Net::HTTPSuccess, Net::HTTPRedirection          
           filename = Time.now.to_i.to_s + ".svg"
           File.open("assets/" + filename, "w") do |file|
-            file.write(resp.body)
+            file.write(res.body)
           end
           
           @cache.cache(snippet, filename)
