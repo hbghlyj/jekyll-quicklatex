@@ -30,7 +30,7 @@ module Jekyll
         site = context.registers[:site]
         filename = remote_compile @body
         site.static_files << Jekyll::StaticFile.new(site, site.source, '/assets', filename)
-        "<img src='/assets/#{filename}'/>"
+        "<img src='/assets/#{filename}' style='vertical-align:middle'>"
       end
 
       def nodelist
