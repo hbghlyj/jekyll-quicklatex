@@ -6,12 +6,11 @@ require 'jekyll/quicklatex/version'
 module Jekyll
   module Quicklatex
     class LatexBlock < Liquid::Block
-      Syntax = /\A\s*\z/
 
       def initialize(tag_name, markup, parse_context)
         super
         init_param
-        ensure_valid_markup(tag_name, markup, parse_context)
+        @text = markup
       end
       #Start raw: https://github.com/Shopify/liquid/blob/main/lib/liquid/tags/raw.rb
       def parse(tokens)
@@ -30,7 +29,7 @@ module Jekyll
         site = context.registers[:site]
         filename = remote_compile @body
         site.static_files << Jekyll::StaticFile.new(site, site.source, '/assets', filename)
-        "<img src='/assets/#{filename}' style='vertical-align:middle'>"
+        "<img src='/assets/#{filename}' style='vertical-align:middle;#{@text}'>"
       end
 
       def nodelist
@@ -39,14 +38,6 @@ module Jekyll
 
       def blank?
         @body.empty?
-      end
-
-      protected
-
-      def ensure_valid_markup(tag_name, markup, parse_context)
-        unless Syntax.match?(markup)
-          raise SyntaxError, parse_context.locale.t("errors.syntax.tag_unexpected_args", tag: tag_name)
-        end
       end
       #End raw
 
